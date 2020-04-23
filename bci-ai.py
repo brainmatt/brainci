@@ -8,13 +8,14 @@ import datetime
 from time import time, strftime, gmtime
 import tensorflow as tf
 import numpy as np
-from numpy import genfromtxt
+from numpy import genfromtxt, newaxis, zeros
 np_utils=tf.keras.utils
 import pandas as pd
 from scipy.signal import butter, lfilter
 from sklearn.model_selection import train_test_split
 from tensorflow import keras
 from optparse import OptionParser
+import matplotlib.pyplot as plt
 
 currentpath = os.path.dirname(os.path.realpath(sys.argv[0]))
 
@@ -22,6 +23,7 @@ parser = OptionParser()
 parser.add_option("-f", "--filename", dest="filename", type='str', help="The recorded and combined csv file.")
 parser.add_option("-e", "--epochs", dest="epochs", type='int', help="The number of epochs to devide the data in.")
 parser.add_option("-m", "--model", dest="model", type='str', help="The name for saving the model.")
+parser.add_option("-l", "--loadmodel", dest="load", type='str', help="The name for the model to load.")
 (options, args) = parser.parse_args()
 if not options.filename:
     print("ERROR: please use -f to specify the recorded and combined csv file!")
@@ -37,6 +39,16 @@ print("Using " + str(default_epochs) + " epochs")
 save_model = False
 if options.model:
     save_model = True
+
+load_model_path = ""
+load_model = False
+if options.load:
+    load_model = True
+    load_model_path = currentpath + "/models/" + options.load + ".h5"
+    if not os.path.isfile(load_model_path):
+        print("ERROR: The specificed trained model to load does not exists!")
+        sys.exit(1)
+
 
 log_dir = "logs/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 
@@ -101,7 +113,7 @@ currentImage = np.zeros(4)
 imageDimensions = (imageLength, 4)
 imageDirectory = np.zeros(imageDimensions)
 answerDirectory = np.zeros(1)
-
+term_arr = []
 
 while lineIndex < my_data.shape[0]:
     currentLine = np.array(my_data[lineIndex])
@@ -138,64 +150,67 @@ X_train, X_test, y_train, y_test = train_test_split(imageDirectory, answerDirect
 #print(str(X_train))
 
 
-# Build Model
-model = tf.keras.Sequential()
-model.add(tf.keras.layers.Conv1D(40, 10, strides=2, padding='same', activation='relu', input_shape=(imageLength, 4)))
-model.add(tf.keras.layers.Dropout(0.2))
-model.add(tf.keras.layers.MaxPooling1D(3))
-model.add(tf.keras.layers.GlobalAveragePooling1D())
-model.add(tf.keras.layers.Dense(50, activation='relu'))
-model.add(tf.keras.layers.Dropout(0.2))
-model.add(tf.keras.layers.Dense(4, activation='softmax'))
+# load existing trained model
+model = None
+if load_model:
+    print("Loading trained model from: " + load_model_path)
+    model = tf.keras.models.load_model(load_model_path)
+    model.summary()
 
-model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-model.summary()
-
-# add tensorboard logging
-tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
-
-# Train Model
-history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=100, epochs=default_epochs, callbacks=[tensorboard_callback])
-history_dict = history.history
-history_dict.keys()
-print("history: " + str(history_dict['accuracy']))
+else:
 
 
+    # Build Model
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Conv1D(40, 10, strides=2, padding='same', activation='relu', input_shape=(imageLength, 4)))
+    model.add(tf.keras.layers.Dropout(0.2))
+    model.add(tf.keras.layers.MaxPooling1D(3))
+    model.add(tf.keras.layers.GlobalAveragePooling1D())
+    model.add(tf.keras.layers.Dense(50, activation='relu'))
+    model.add(tf.keras.layers.Dropout(0.2))
+    model.add(tf.keras.layers.Dense(4, activation='softmax'))
+
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.summary()
+
+    # add tensorboard logging
+    tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+
+    # Train Model
+    history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=100, epochs=default_epochs, callbacks=[tensorboard_callback])
+    history_dict = history.history
+    #history_dict.keys()
+    print("history: " + str(history_dict['accuracy']))
 
 
+    acc = history_dict['accuracy']
+    val_acc = history_dict['val_accuracy']
+    loss = history_dict['loss']
+    val_loss = history_dict['val_loss']
 
-import matplotlib.pyplot as plt
+    epochs = range(1, len(acc) + 1)
 
-acc = history_dict['accuracy']
-val_acc = history_dict['val_accuracy']
-loss = history_dict['loss']
-val_loss = history_dict['val_loss']
-
-epochs = range(1, len(acc) + 1)
-
-# "bo" is for "blue dot"
-plt.plot(epochs, loss, 'bo', label='Training loss')
-# b is for "solid blue line"
-plt.plot(epochs, val_loss, 'b', label='Validation loss')
-plt.title('Training and validation loss')
-plt.xlabel('Epochs')
-plt.ylabel('Loss')
-plt.legend()
-
-#plt.show()
+    # "bo" is for "blue dot"
+    plt.plot(epochs, loss, 'bo', label='Training loss')
+    # b is for "solid blue line"
+    plt.plot(epochs, val_loss, 'b', label='Validation loss')
+    plt.title('Training and validation loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+    #plt.show()
 
 
-#plt.clf()   # clear figure
+    #plt.clf()   # clear figure
+    plt.plot(epochs, acc, 'bo', label='Training acc')
+    plt.plot(epochs, val_acc, 'b', label='Validation acc')
+    plt.title('Training and validation accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend(loc='lower right')
+    #plt.show()
 
-plt.plot(epochs, acc, 'bo', label='Training acc')
-plt.plot(epochs, val_acc, 'b', label='Validation acc')
-plt.title('Training and validation accuracy')
-plt.xlabel('Epochs')
-plt.ylabel('Accuracy')
-plt.legend(loc='lower right')
 
-#plt.show()
 
 # prediction
 # https://www.tensorflow.org/tutorials/keras/classification
@@ -204,34 +219,71 @@ y_predicted = model.predict(X_test)
 #y_predicted = model.predict(X_train)
 
 
+for x in y_test:
+#    print(x)
+    if x[1] > 0:
+        term_arr.append(1)
+    if x[2] > 0:
+        term_arr.append(2)
+    if x[3] > 0:
+        term_arr.append(3)
+
+#print(term_arr)
+
+term_loop = 0
 print("Predictions :")
 for p in y_predicted:
-    #print(p)
-    print(np.argmax(p))
-
-
-#print("X_test :")
-#print(X_test)
-#for x in X_test:
-#    print(x)
+    print("Term: " + str(term_arr[term_loop]) + " == " +  str(np.argmax(p)))
+    term_loop = term_loop + 1
 
 
 model.summary()
 loss1, acc1 = model.evaluate(X_test,  y_test, verbose=2)
 print('Trained model, accuracy: {:5.2f}%'.format(100*acc1))
 
+while True:
+    try:
+        #sample = 3
+        sample = int(input("Please enter a sample number: "))
+
+        #print("single sample data: ")
+        #print(X_test[sample])
+        #print("single sample shape: ")
+        #print(str(X_test[sample].shape))
+
+        sample_reshaped = np.expand_dims(X_test[sample], axis=0)
+        #print("single sample after reshape: ")
+        #print(str(sample_reshaped.shape))
+
+        #print("single sample data after reshape: ")
+        #print(sample_reshaped)
+
+        #print("full test data shape: ")
+        #print(X_test.shape)
+
+        print("Single Prediction sample: " + str(sample))
+        print("Single Prediction answer: " + str(term_arr[sample]))
+        single_predicted = model.predict(sample_reshaped)
+        print("Single Prediction predicted: " + str(np.argmax(single_predicted)))
+        print("---------------------------------")
+
+    except KeyboardInterrupt:
+        print("")
+        break
+
 if save_model:
-    save_model_path = currentpath + "/models/" + str(options.model) + ".h5"
-    print("Saving trained model at: " + save_model_path)
-    model.save(save_model_path) 
-
-    # validate
-    new_model = tf.keras.models.load_model(save_model_path)
-    new_model.summary()
-    loss2, acc2 = model.evaluate(X_test,  y_test, verbose=2)
-    print('Restored model, accuracy: {:5.2f}%'.format(100*acc2))
-
-
+    save_it = input("Would you like to save this trained model? (y/n)")
+    if save_it=="y":
+        save_model_path = currentpath + "/models/" + str(options.model) + ".h5"
+        print("Saving trained model at: " + save_model_path)
+        model.save(save_model_path)
+        # validate
+        new_model = tf.keras.models.load_model(save_model_path)
+        new_model.summary()
+        loss2, acc2 = model.evaluate(X_test,  y_test, verbose=2)
+        print('Restored model, accuracy: {:5.2f}%'.format(100*acc2))
+    else:
+        print("Skipping saving trained model")
 
 
 
