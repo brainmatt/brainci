@@ -1,5 +1,5 @@
-# brainci
-A collection of tools to record EEG brainwaves from a Muse device, train an artificial intelligence with the collected brain data to predict terms from thoughts.
+# Brainci reads your mind - A brain/computer interface for home automation
+A collection of tools to record EEG brainwaves from a Muse device, train an artificial intelligence with the collected brain data to predict terms from thoughts. It can be easily used for home automation to e.g. turn your TV on or off.
 
 [![Click for the introduction Youtube video: Brainci, a brain/computer interface for home automation](https://img.youtube.com/vi/2QpyqPsgJfI/0.jpg)](https://www.youtube.com/watch?v=2QpyqPsgJfI "Click for the introduction Youtube video: Brainci, a brain/computer interface for home automation")
 
