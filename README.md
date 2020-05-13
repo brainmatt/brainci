@@ -1,6 +1,9 @@
 # brainci
 A collection of tools to record EEG brainwaves from a Muse device, train an artificial intelligence with the collected brain data to predict terms from thoughts.
 
+[![Click for the introduction Youtube video: Brainci, a brain/computer interface for home automation](https://img.youtube.com/vi/2QpyqPsgJfI/0.jpg)](https://www.youtube.com/watch?v=2QpyqPsgJfI "Click for the introduction Youtube video: Brainci, a brain/computer interface for home automation")
+
+
 bci-record.py:
 - Starts "bci-stream" to initate the Muse EEG stream
 - Records EEG brainwaves from a Muse 2 device
