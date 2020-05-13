@@ -1,0 +1,4 @@
+#!/bin/bash
+
+muselsl stream --gyro --address 00:55:DA:B5:76:A9 
+

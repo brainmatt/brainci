@@ -1,0 +1,21 @@
+# DPAD_CENTER:          23
+# DPAD_DOWN:            20
+# DPAD_LEFT:            21
+# DPAD_RIGHT:           22
+# DPAD_UP:              19
+# BACK:                 4
+# MENU:                 82
+# MEDIA_REWIND:         89
+# MEDIA_PLAY_PAUSE:     85
+# MEDIA_FAST_FORWARD:   90
+# MUTE:                 91
+# PAIRING:              225
+# HOME:                 3
+# ON:			4
+# STANDBY:		6
+
+adb connect 192.168.88.105:5555
+adb shell input keyevent 4
+adb kill-server
+
+

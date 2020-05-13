@@ -4,6 +4,7 @@
 
 import sys
 import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = '2'
 import datetime
 from time import time, strftime, gmtime
 import tensorflow as tf
@@ -105,87 +106,27 @@ imageDirectory = np.delete(imageDirectory, 0, 0)
 answerDirectory = np.delete(answerDirectory, 0, 0)
 answerDirectory = np_utils.to_categorical(answerDirectory)
 
-
-
 # Split to Training and Testing Set
-X_train, X_test, y_train, y_test = train_test_split(imageDirectory, answerDirectory, test_size=0.1)
+#X_train, X_test, y_train, y_test = train_test_split(imageDirectory, answerDirectory, test_size=0.1)
+
+# use all given data, no splitting
+X_train = imageDirectory
+y_train = answerDirectory
 
 #print("X_train:" + str(X_train))
-#print("X_test:" + str(X_test))
 
 model = tf.keras.models.load_model(save_model_path)
 model.summary()
-#loss2, acc2 = model.evaluate(X_test,  y_test, verbose=2)
+#loss2, acc2 = model.evaluate(X_train,  y_train, verbose=2)
 #print('Restored model, accuracy: {:5.2f}%'.format(100*acc2))
-
-
-
-
-# Build Model
-#model = tf.keras.Sequential()
-#model.add(tf.keras.layers.Conv1D(40, 10, strides=2, padding='same', activation='relu', input_shape=(imageLength, 4)))
-#model.add(tf.keras.layers.Dropout(0.2))
-#model.add(tf.keras.layers.MaxPooling1D(3))
-#model.add(tf.keras.layers.GlobalAveragePooling1D())
-#model.add(tf.keras.layers.Dense(50, activation='relu'))
-#model.add(tf.keras.layers.Dropout(0.2))
-#model.add(tf.keras.layers.Dense(4, activation='softmax'))
-
-#model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-#model.summary()
-
-# add tensorboard logging
-#tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
-
-# Train Model
-#history = model.fit(X_train, y_train, validation_data=(X_test, y_test), batch_size=100, epochs=default_epochs, callbacks=[tensorboard_callback])
-#history_dict = history.history
-#history_dict.keys()
-#print("history: " + str(history_dict['accuracy']))
-
-#import matplotlib.pyplot as plt
-
-#acc = history_dict['accuracy']
-#val_acc = history_dict['val_accuracy']
-#loss = history_dict['loss']
-#val_loss = history_dict['val_loss']
-
-#epochs = range(1, len(acc) + 1)
-
-# "bo" is for "blue dot"
-#plt.plot(epochs, loss, 'bo', label='Training loss')
-# b is for "solid blue line"
-#plt.plot(epochs, val_loss, 'b', label='Validation loss')
-#plt.title('Training and validation loss')
-#plt.xlabel('Epochs')
-#plt.ylabel('Loss')
-#plt.legend()
-
-#plt.show()
-
-
-#plt.clf()   # clear figure
-
-#plt.plot(epochs, acc, 'bo', label='Training acc')
-#plt.plot(epochs, val_acc, 'b', label='Validation acc')
-#plt.title('Training and validation accuracy')
-#plt.xlabel('Epochs')
-#plt.ylabel('Accuracy')
-#plt.legend(loc='lower right')
-
-#plt.show()
 
 # prediction
 # https://www.tensorflow.org/tutorials/keras/classification
-print("Prediction ----")
-#y_predicted = model.predict(X_test)
 y_predicted = model.predict(X_train)
 
-
-count1 = 1
-count2 = 2
-count3 = 3
+count1 = 0
+count2 = 0
+count3 = 0
 countloop = 0
 
 print("Predictions :")
@@ -209,19 +150,10 @@ print("Predict 1: " + str(count1) + " =  {:5.2f}%".format(count1percent))
 print("Predict 2: " + str(count2) + " =  {:5.2f}%".format(count2percent))
 print("Predict 3: " + str(count3) + " =  {:5.2f}%".format(count3percent))
 
-
-
-
-#print("X_test :")
-#print(X_test)
-#for x in X_test:
-#    print(x)
-
-# validate
-#model = tf.keras.models.load_model(save_model_path)
 #model.summary()
-#loss2, acc2 = model.evaluate(X_test,  y_test, verbose=2)
-#print('Restored model, accuracy: {:5.2f}%'.format(100*acc2))
+#loss1, acc1 = model.evaluate(X_train,  y_train, verbose=2)
+#print('Trained model, accuracy: {:5.2f}%'.format(100*acc1))
+
 
 
 

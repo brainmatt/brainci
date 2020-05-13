@@ -4,8 +4,9 @@
 
 import sys
 import os
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = '2'
 import datetime
-from time import time, strftime, gmtime
+from time import time, strftime, gmtime, sleep
 import tensorflow as tf
 import numpy as np
 from numpy import genfromtxt, newaxis, zeros
@@ -88,7 +89,6 @@ def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
 
 # Remove Noise
 nsamples = my_data[:, 1].shape[0]
-
 T = nsamples/400
 t = np.linspace(0, T, nsamples, endpoint=False)
 fs = 400.0
@@ -156,7 +156,7 @@ if load_model:
     print("Loading trained model from: " + load_model_path)
     model = tf.keras.models.load_model(load_model_path)
     model.summary()
-
+    sleep(4)
 else:
 
 
@@ -172,6 +172,7 @@ else:
 
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
     model.summary()
+    sleep(4)
 
     # add tensorboard logging
     tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
@@ -198,17 +199,17 @@ else:
     plt.xlabel('Epochs')
     plt.ylabel('Loss')
     plt.legend()
-    #plt.show()
+    plt.show()
 
 
-    #plt.clf()   # clear figure
+    plt.clf()   # clear figure
     plt.plot(epochs, acc, 'bo', label='Training acc')
     plt.plot(epochs, val_acc, 'b', label='Validation acc')
     plt.title('Training and validation accuracy')
     plt.xlabel('Epochs')
     plt.ylabel('Accuracy')
     plt.legend(loc='lower right')
-    #plt.show()
+    plt.show()
 
 
 
